@@ -45,19 +45,12 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint("https://api.github.com")
+                .build();
+        GitHubService service = restAdapter.create(GitHubService.class);
 
-        Observable<List<Repo>> observable = Observable.create(new Observable.OnSubscribe<List<Repo>>() {
-            @Override
-            public void call(Subscriber<? super List<Repo>> subscriber) {
-                RestAdapter restAdapter = new RestAdapter.Builder()
-                        .setEndpoint("https://api.github.com")
-                        .build();
-                GitHubService service = restAdapter.create(GitHubService.class);
-                List<Repo> repos = service.listRepos("cattaka");
-                subscriber.onNext(repos);
-                subscriber.onCompleted();
-            }
-        }).subscribeOn(Schedulers.io());
+        Observable<List<Repo>> observable = service.listRepos("cattaka").subscribeOn(Schedulers.io());
 
         AppObservable.bindFragment(this, observable).subscribe(new Action1<List<Repo>>() {
             @Override
